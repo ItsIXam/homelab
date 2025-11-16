@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
     networks:
       monsklint:
-        ipv4_address: ${172.20.0.29}
+        ipv4_address: ${AUTOBRR_DOCKER_IP_ADDRESS}
 networks:
   monsklint:
     external: true
