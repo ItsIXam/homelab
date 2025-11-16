@@ -1,0 +1,29 @@
+services:
+  service_name_1:
+    image:
+    container_name:
+    volumes:
+      - x
+      - y
+      - z
+    environment:
+      - x
+      - y
+      - z
+    ports:
+      - port:port
+    restart: unless-stopped / always
+    networks:
+      network_name:
+        ipv4_address: x.x.x.x
+    healthcheck:
+      test: test_command
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+  service_name_2:
+    ...
+networks:
+  network_name:
+    external: true
