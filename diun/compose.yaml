@@ -1,0 +1,28 @@
+services:
+  diun:
+    image: crazymax/diun:${RELEASE_TAG}
+    container_name: diun
+    command: serve
+    volumes:
+      - ${DIUN_DIRECTORY}:/data
+      - ${DIUN_DIRECTORY}/diun.yaml:/diun.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=${TZ}
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+      - LOG_LEVEL=info
+      - DIUN_PROVIDERS_DOCKER=true
+    restart: unless-stopped
+    networks:
+      monsklint:
+        ipv4_address: ${DIUN_DOCKER_IP_ADDRESS}
+    # healthcheck:
+    #   test: test_command
+    #   interval: 60s
+    #   retries: 5
+    #   start_period: 20s
+    #   timeout: 10s
+networks:
+  monsklint:
+    external: true
