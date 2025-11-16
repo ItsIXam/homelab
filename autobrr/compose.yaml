@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
     networks:
       monsklint:
-        ipv4_address: ${AUTOBRR_DOCKER_IP_ADDRESS}
+        ipv4_address: ${THELOUNGE_DOCKER_IP_ADDRESS}
 networks:
   monsklint:
     external: true
