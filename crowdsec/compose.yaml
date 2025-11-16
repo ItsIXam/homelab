@@ -1,0 +1,35 @@
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:${RELEASE_TAG}
+    container_name: crowdsec
+    volumes:
+      - ${CROWDSEC_DIRECTORY}/data:/var/lib/crowdsec/data
+      - ${CROWDSEC_DIRECTORY}/etc:/etc/crowdsec
+      # log bind mounts into crowdsec
+      - /var/log/auth.log:/var/log/auth.log:ro
+      - /var/log/syslog:/var/log/syslog:ro
+      - ${TRAEFIK_DIRECTORY}/logs/:/var/log/traefik/:ro
+      - ${JELLYFIN_DIRECTORY}/config/log:/var/log/jellyfin/:ro
+    environment:
+      - TZ=${TZ}
+      - UID=${USER_ID}
+      - GID=${GROUP_ID}
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/base-http-scenarios crowdsecurity/sshd crowdsecurity/linux crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-crs
+      - DISCORD_WEBHOOK_ID=${DISCORD_WEBHOOK_ID}
+      - DISCORD_WEBHOOK_TOKEN=${DISCORD_WEBHOOK_TOKEN}
+    expose:
+      - ${CROWDSEC_BOUNCHER_PORT} # http api for bouncers
+      - ${APP_SEC_WAF_PORT} # appsec waf endpoint
+    restart: unless-stopped
+    networks:
+      monsklint:
+        ipv4_address: ${CROWDSEC_DOCKER_IP_ADDRESS}
+    healthcheck:
+      test: ["CMD", "cscli", "version"]
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+networks:
+  monsklint:
+    external: true
