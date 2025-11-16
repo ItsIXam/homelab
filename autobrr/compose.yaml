@@ -1,0 +1,30 @@
+services:
+  autobrr:
+    image: ghcr.io/autobrr/autobrr:latest
+    container_name: autobrr
+    volumes:
+      - ${AUTOBRR_DIRECTORY}/config:/config
+    environment:
+      - TZ=${TZ}
+    user: 0:0
+    ports:
+      - ${AUTOBRR_PORT}:7474
+    restart: unless-stopped
+    networks:
+      monsklint:
+        ipv4_address: ${AUTOBRR_DOCKER_IP_ADDRESS}
+  thelounge:
+    image: ghcr.io/thelounge/thelounge:latest
+    container_name: thelounge
+    volumes:
+      - ${THELOUNGE_DIRECTORY}:/var/opt/thelounge
+    user: 568:568
+    ports:
+      - "${THELOUNGE_PORT}:9000"
+    restart: unless-stopped
+    networks:
+      monsklint:
+        ipv4_address: ${172.20.0.29}
+networks:
+  monsklint:
+    external: true
