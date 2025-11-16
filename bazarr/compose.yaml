@@ -1,0 +1,26 @@
+services:
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=${APPS_USER_ID}
+      - PGID=${APPS_GROUP_ID}
+      - TZ=${TZ}
+    volumes:
+      - ${BAZARR_DIRECTORY}:/config
+      - ${DATA_DIRECTORY}:/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.bazarr-https.tls=true
+      - traefik.http.routers.bazarr-https.tls.certresolver=cloudflare
+      - traefik.http.routers.bazarr-https.entrypoints=websecure-int #internal entrypoint
+      - traefik.http.routers.bazarr-https.rule=Host(`bazarr.${DOMAIN_NAME}`)
+    restart: unless-stopped
+
+    networks:
+      monsklint:
+        ipv4_address: ${DOCKER_IP_ADDRESS}
+networks:
+  monsklint:
+    external: true
+    
