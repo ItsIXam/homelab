@@ -1,0 +1,124 @@
+services:
+  gluetun:
+    image: qmcgaw/gluetun:v3.40.0
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - ${DEVICE_DIRECTORY}:/dev/net/tun
+    volumes: 
+      - ${GLUETUN_DIRECTORY}/config.toml:/gluetun/auth/config.toml:ro
+    environment:
+      - TZ=${TZ}
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+      - HTTP_CONTROL_SERVER_ADDRESS=0.0.0.0:${GLUETUN_PORT}
+      - HTTP_CONTROL_SERVER_LOG=ON
+      - HTTP_CONTROL_SERVER_AUTH_CONFIG_FILEPATH=/gluetun/auth/config.toml
+      - UPDATER_PERIOD=24h
+      - FIREWALL_INPUT_PORTS=${GLUETUN_PORT},${QBITTORRENT_PORT},${PROWLARR_PORT}
+      - VPN_SERVICE_PROVIDER=${VPN_PROVIDER}
+      - VPN_TYPE=${VPN_TYPE}
+      - SERVER_COUNTRIES=${SERVER_COUNTRY_LIST}
+      - WIREGUARD_PRIVATE_KEY=${VPN_PRIVATE_KEY}
+      - FIREWALL_OUTBOUND_SUBNETS=${GLUETUN_SUBNET}/16
+      - VPN_PORT_FORWARDING=on
+      - >-  
+        VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused -t 15 --save-cookies=cookies.txt --post-data "username=${QBITTORRENT_USERNAME}&password=${QBITTORRENT_PASSWORD}" http://localhost:${QBITTORRENT_PORT}/api/v2/auth/login; wget -O- --retry-connrefused -t 15 --load-cookies=cookies.txt --post-data "json={\"listen_port\":{{PORTS}}}" http://localhost:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1'
+    ports:
+      - ${GLUETUN_PORT}:8000 # control server
+      - ${QBITTORRENT_PORT}:8081 # qbittorrent webui
+      - ${PROWLARR_PORT}:9696 # prowlarr
+    restart: always
+    networks:
+      monsklint:
+        ipv4_address: ${GLUETUN_DOCKER_IP_ADDRESS}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=monsklint
+      
+      - traefik.http.routers.qbittorrent-https.tls=true
+      - traefik.http.routers.qbittorrent-https.tls.certresolver=cloudflare
+      - traefik.http.routers.qbittorrent-https.entrypoints=websecure-int #internal entrypoint
+      - traefik.http.routers.qbittorrent-https.rule=Host(`qbittorrent.monsklint.nl`)
+      - traefik.http.routers.qbittorrent-https.service=qbittorrent
+      - traefik.http.services.qbittorrent.loadbalancer.server.port=${QBITTORRENT_PORT}
+
+      - traefik.http.routers.prowlarr-https.tls=true
+      - traefik.http.routers.prowlarr-https.tls.certresolver=cloudflare
+      - traefik.http.routers.prowlarr-https.entrypoints=websecure-int #internal entrypoint
+      - traefik.http.routers.prowlarr-https.rule=Host(`prowlarr.monsklint.nl`)
+      - traefik.http.routers.prowlarr-https.service=prowlarr
+      - traefik.http.services.prowlarr.loadbalancer.server.port=${PROWLARR_PORT}
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:${RELEASE_TAG}
+    container_name: qbittorrent
+    volumes:
+      - ${QBITTORRENT_DIRECTORY}:/config
+      - ${TORRENT_DIRECTORY}:/data/torrents
+    environment:
+      - TZ=${TZ}
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+      - WEBUI_PORT=${QBITTORRENT_PORT}
+    restart: unless-stopped
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
+    labels:
+      autoheal-app: true
+    healthcheck:
+      test: wget -O - -t 1 --post-data="username=${QBITTORRENT_USERNAME}&password=${QBITTORRENT_PASSWORD}"  http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/auth/login || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:${RELEASE_TAG}
+    container_name: prowlarr
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ${PROWLARR_DIRECTORY}:/config
+    environment:
+      - TZ=${TZ}
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    restart: unless-stopped
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
+    labels:
+      autoheal-app: true
+    healthcheck:
+      test: wget --output-document=/dev/null --tries=1 http://${GLUETUN_DOCKER_IP_ADDRESS}:${PROWLARR_PORT}/api/v1/health?apikey=${PROWLARR_API_KEY} &> /dev/null || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+  autoheal:
+    image: willfarrell/autoheal:${RELEASE_TAG}
+    container_name: autoheal
+    volumes:
+      - ${DOCKER_SOCK_LOCATION}:/var/run/docker.sock
+    environment: 
+      - AUTOHEAL_CONTAINER_LABEL=autoheal-app
+      - AUTOHEAL_START_PERIOD=10
+      - AUTOHEAL_INTERVAL=60
+      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
+      - AUTOHEAL_ONLY_MONITOR_RUNNING=true
+      - AUTOHEAL_START_PERIOD=30
+      - WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    restart: unless-stopped
+    networks:
+      monsklint:
+        ipv4_address: ${AUTOHEAL_DOCKER_IP_ADDRESS}
+    healthcheck:
+      test: test_command
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+networks:
+  monsklint:
+    external: true
