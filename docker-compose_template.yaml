@@ -16,6 +16,10 @@ services:
     networks:
       network_name:
         ipv4_address: x.x.x.x
+    labels:
+      - key_1=value_1
+      - key_2=value_2
+      - key_3=value_3
     healthcheck:
       test: test_command
       interval: 60s
