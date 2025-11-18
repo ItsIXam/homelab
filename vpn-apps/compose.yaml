@@ -113,12 +113,6 @@ services:
     networks:
       monsklint:
         ipv4_address: ${AUTOHEAL_DOCKER_IP_ADDRESS}
-    healthcheck:
-      test: test_command
-      interval: 60s
-      retries: 5
-      start_period: 20s
-      timeout: 10s
 networks:
   monsklint:
     external: true
