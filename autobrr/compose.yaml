@@ -18,7 +18,7 @@ services:
       - traefik.docker.network=monsklint
 
       # Router
-      - traefik.http.routers.autobrr.rule=Host(`audiobookshelf.monsklint.nl`)
+      - traefik.http.routers.autobrr.rule=Host(`autobrr.monsklint.nl`)
       - traefik.http.routers.autobrr.entrypoints=websecure-int
       - traefik.http.routers.autobrr.tls=true
       - traefik.http.routers.autobrr.tls.certresolver=cloudflare
