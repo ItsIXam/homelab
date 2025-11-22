@@ -13,6 +13,18 @@ services:
     networks:
       monsklint:
         ipv4_address: ${AUTOBRR_DOCKER_IP_ADDRESS}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=monsklint
+
+      # Router
+      - traefik.http.routers.autobrr.rule=Host(`audiobookshelf.monsklint.nl`)
+      - traefik.http.routers.autobrr.entrypoints=websecure-int
+      - traefik.http.routers.autobrr.tls=true
+      - traefik.http.routers.autobrr.tls.certresolver=cloudflare
+
+      # Service
+      - traefik.http.services.autobrr.loadbalancer.server.port=${AUTOBRR_PORT}
   thelounge:
     image: ghcr.io/thelounge/thelounge:latest
     container_name: thelounge
@@ -25,6 +37,18 @@ services:
     networks:
       monsklint:
         ipv4_address: ${THELOUNGE_DOCKER_IP_ADDRESS}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=monsklint
+
+      # Router
+      - traefik.http.routers.thelounge.rule=Host(`thelounge.monsklint.nl`)
+      - traefik.http.routers.thelounge.entrypoints=websecure-int
+      - traefik.http.routers.thelounge.tls=true
+      - traefik.http.routers.thelounge.tls.certresolver=cloudflare
+
+      # Service
+      - traefik.http.services.thelounge.loadbalancer.server.port=${THELOUNGE_PORT}
 networks:
   monsklint:
     external: true
