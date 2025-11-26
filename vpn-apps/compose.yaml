@@ -113,6 +113,14 @@ services:
     networks:
       monsklint:
         ipv4_address: ${AUTOHEAL_DOCKER_IP_ADDRESS}
+  mousehole:
+    image: tmmrtn/mousehole:latest
+    volumes:
+      - ${MOUSEHOLE_DIRECTORY}:/srv/mousehole
+    environment:
+      - TZ=${TZ}
+    network_mode: "service:gluetun"
+    restart: unless-stopped
 networks:
   monsklint:
     external: true
