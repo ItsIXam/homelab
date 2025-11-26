@@ -50,6 +50,13 @@ services:
       - traefik.http.routers.prowlarr-https.rule=Host(`prowlarr.monsklint.nl`)
       - traefik.http.routers.prowlarr-https.service=prowlarr
       - traefik.http.services.prowlarr.loadbalancer.server.port=${PROWLARR_PORT}
+
+      - traefik.http.routers.mousehole-https.tls=true
+      - traefik.http.routers.mousehole-https.tls.certresolver=cloudflare
+      - traefik.http.routers.mousehole-https.entrypoints=websecure-int #internal entrypoint
+      - traefik.http.routers.mousehole-https.rule=Host(`mousehole.monsklint.nl`)
+      - traefik.http.routers.mousehole-https.service=mousehole
+      - traefik.http.services.mousehole.loadbalancer.server.port=${MOUSEHOLE_PORT}
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:${RELEASE_TAG}
     container_name: qbittorrent
