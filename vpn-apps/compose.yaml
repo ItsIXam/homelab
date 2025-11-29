@@ -1,6 +1,6 @@
 services:
   gluetun:
-    image: qmcgaw/gluetun:v3.40.3
+    image: qmcgaw/gluetun:${GLUETUN_RELEASE_TAG}
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -60,7 +60,7 @@ services:
       - traefik.http.routers.mousehole-https.service=mousehole
       - traefik.http.services.mousehole.loadbalancer.server.port=${MOUSEHOLE_PORT}
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:${RELEASE_TAG}
+    image: lscr.io/linuxserver/qbittorrent:${QBITTORRENT_RELEASE_TAG}
     container_name: qbittorrent
     volumes:
       - ${QBITTORRENT_DIRECTORY}:/config
@@ -83,7 +83,7 @@ services:
       retries: 2
       start_period: 10s
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:${RELEASE_TAG}
+    image: lscr.io/linuxserver/prowlarr:${PROWLARR_RELEASE_TAG}
     container_name: prowlarr
     security_opt:
       - no-new-privileges:true
@@ -105,25 +105,25 @@ services:
       timeout: 5s
       retries: 2
       start_period: 10s
-  autoheal:
-    image: willfarrell/autoheal:${RELEASE_TAG}
-    container_name: autoheal
-    volumes:
-      - ${DOCKER_SOCK_LOCATION}:/var/run/docker.sock
-    environment: 
-      - AUTOHEAL_CONTAINER_LABEL=autoheal-app
-      - AUTOHEAL_START_PERIOD=10
-      - AUTOHEAL_INTERVAL=60
-      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
-      - AUTOHEAL_ONLY_MONITOR_RUNNING=true
-      - AUTOHEAL_START_PERIOD=30
-      - WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
-    restart: unless-stopped
-    networks:
-      monsklint:
-        ipv4_address: ${AUTOHEAL_DOCKER_IP_ADDRESS}
+#   autoheal:
+#     image: willfarrell/autoheal:${RELEASE_TAG}
+#     container_name: autoheal
+#     volumes:
+#       - ${DOCKER_SOCK_LOCATION}:/var/run/docker.sock
+#     environment: 
+#       - AUTOHEAL_CONTAINER_LABEL=autoheal-app
+#       - AUTOHEAL_START_PERIOD=10
+#       - AUTOHEAL_INTERVAL=60
+#       - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
+#       - AUTOHEAL_ONLY_MONITOR_RUNNING=true
+#       - AUTOHEAL_START_PERIOD=30
+#       - WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+#     restart: unless-stopped
+#     networks:
+#       monsklint:
+#         ipv4_address: ${AUTOHEAL_DOCKER_IP_ADDRESS}
   mousehole:
-    image: tmmrtn/mousehole:latest
+    image: tmmrtn/mousehole:${MOUSEHOLE_RELEASE_TAG}
     volumes:
       - ${MOUSEHOLE_DIRECTORY}/:/srv/mousehole
     environment:
