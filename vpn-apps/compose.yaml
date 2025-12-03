@@ -8,6 +8,7 @@ services:
       - ${DEVICE_DIRECTORY}:/dev/net/tun
     volumes: 
       - ${GLUETUN_DIRECTORY}/config.toml:/gluetun/auth/config.toml:ro
+      - ${GLUETUN_DIRECTORY}:/gluetun
     environment:
       - TZ=${TZ}
       - PUID=${USER_ID}
@@ -33,6 +34,7 @@ services:
       - ${QBITTORRENT_PORT}:8081 # qbittorrent webui
       - ${PROWLARR_PORT}:9696 # prowlarr
     restart: always
+    command: update -enduser -providers protonvpn -proton-email ${UPDATER_PROTONVPN_EMAIL} -proton-password ${UPDATER_PROTONVPN_PASSWORD}
     networks:
       monsklint:
         ipv4_address: ${GLUETUN_DOCKER_IP_ADDRESS}
