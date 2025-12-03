@@ -26,8 +26,8 @@ services:
       - WIREGUARD_PRIVATE_KEY=${VPN_PRIVATE_KEY}
       - FIREWALL_OUTBOUND_SUBNETS=${GLUETUN_SUBNET}/16
       - VPN_PORT_FORWARDING=on
-      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1' 
-      - VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo"}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1'
+      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --save-cookies=cookies.txt --post-data "username=${QBITTORRENT_USERNAME}&password=${QBITTORRENT_PASSWORD}" http://localhost:${QBITTORRENT_PORT}/api/v2/auth/login; wget -O- --retry-connrefused --load-cookies=cookies.txt --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1' 
+      - VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --load-cookies=cookies.txt --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo"}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1'
     ports:
       - ${GLUETUN_PORT}:8000 # control server
       - ${QBITTORRENT_PORT}:8081 # qbittorrent webui
