@@ -21,12 +21,15 @@ services:
       - FIREWALL_INPUT_PORTS=${GLUETUN_PORT},${QBITTORRENT_PORT},${PROWLARR_PORT}
       - VPN_SERVICE_PROVIDER=${VPN_PROVIDER}
       - VPN_TYPE=${VPN_TYPE}
-      - SERVER_COUNTRIES=${SERVER_COUNTRY_LIST}
+    #   - SERVER_COUNTRIES=${SERVER_COUNTRY_LIST}
+      - SERVER_HOSTNAMES="node-lu-05.protonvpn.net"
       - WIREGUARD_PRIVATE_KEY=${VPN_PRIVATE_KEY}
       - FIREWALL_OUTBOUND_SUBNETS=${GLUETUN_SUBNET}/16
       - VPN_PORT_FORWARDING=on
-      - >-  
-        VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused -t 15 --save-cookies=cookies.txt --post-data "username=${QBITTORRENT_USERNAME}&password=${QBITTORRENT_PASSWORD}" http://localhost:${QBITTORRENT_PORT}/api/v2/auth/login; wget -O- --retry-connrefused -t 15 --load-cookies=cookies.txt --post-data "json={\"listen_port\":{{PORTS}}}" http://localhost:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1'
+    #   - >-  
+    #     VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused -t 15 --save-cookies=cookies.txt --post-data "username=${QBITTORRENT_USERNAME}&password=${QBITTORRENT_PASSWORD}" http://localhost:${QBITTORRENT_PORT}/api/v2/auth/login; wget -O- --retry-connrefused -t 15 --load-cookies=cookies.txt --post-data "json={\"listen_port\":{{PORTS}}}" http://localhost:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1'
+      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://localhost:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1' 
+      - VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo"}" http://localhost:${QBITTORRENT_PASSWORD}/api/v2/app/setPreferences 2>&1'
     ports:
       - ${GLUETUN_PORT}:8000 # control server
       - ${QBITTORRENT_PORT}:8081 # qbittorrent webui
@@ -105,23 +108,6 @@ services:
       timeout: 5s
       retries: 2
       start_period: 10s
-#   autoheal:
-#     image: willfarrell/autoheal:${RELEASE_TAG}
-#     container_name: autoheal
-#     volumes:
-#       - ${DOCKER_SOCK_LOCATION}:/var/run/docker.sock
-#     environment: 
-#       - AUTOHEAL_CONTAINER_LABEL=autoheal-app
-#       - AUTOHEAL_START_PERIOD=10
-#       - AUTOHEAL_INTERVAL=60
-#       - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
-#       - AUTOHEAL_ONLY_MONITOR_RUNNING=true
-#       - AUTOHEAL_START_PERIOD=30
-#       - WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
-#     restart: unless-stopped
-#     networks:
-#       monsklint:
-#         ipv4_address: ${AUTOHEAL_DOCKER_IP_ADDRESS}
   mousehole:
     image: tmmrtn/mousehole:${MOUSEHOLE_RELEASE_TAG}
     volumes:
