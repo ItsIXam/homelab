@@ -13,24 +13,35 @@ services:
       - TZ=${TZ}
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
-      - HTTP_CONTROL_SERVER_ADDRESS=0.0.0.0:${GLUETUN_PORT}
-      - HTTP_CONTROL_SERVER_LOG=ON
-      - HTTP_CONTROL_SERVER_AUTH_CONFIG_FILEPATH=/gluetun/auth/config.toml
+    
+      - VPN_SERVICE_PROVIDER=${VPN_PROVIDER}
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_PROVIDER=protonvpn
+      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
+      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --save-cookies=cookies.txt --post-data "username=${QBITTORRENT_USERNAME}&password=${QBITTORRENT_PASSWORD}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/auth/login; wget -O- --retry-connrefused --load-cookies=cookies.txt --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1' 
+      - VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --load-cookies=cookies.txt --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo"}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1'
+    # Updater
       - UPDATER_PERIOD=24h
       - UPDATER_VPN_SERVICE_PROVIDERS=protonvpn
       - UPDATER_PROTONVPN_EMAIL=${UPDATER_PROTONVPN_EMAIL}
       - UPDATER_PROTONVPN_PASSWORD=${UPDATER_PROTONVPN_PASSWORD}
+    # Firewall
       - FIREWALL_INPUT_PORTS=${GLUETUN_PORT},${QBITTORRENT_PORT},${PROWLARR_PORT}
-      - VPN_SERVICE_PROVIDER=${VPN_PROVIDER}
+      - FIREWALL_OUTBOUND_SUBNETS=192.168.69.0/24,10.0.0.0/16,172.20.0.0/16
+    # Dns
+      - DOT_PROVIDERS=cloudflare,google
+      - PUBLICIP_API=ip2location
+      - DNS_ADDRESS=${DNS_ADDRESS}
+    # Wireguard Settings
       - VPN_TYPE=${VPN_TYPE}
-    # - SERVER_COUNTRIES=${SERVER_COUNTRY_LIST}
-      - SERVER_HOSTNAMES=${SERVER_HOSTNAME_LIST}
-      - PORT_FORWARD_ONLY=true
+      - WIREGUARD_PUBLIC_KEY=${VPN_PUBLIC_KEY}
       - WIREGUARD_PRIVATE_KEY=${VPN_PRIVATE_KEY}
-      - FIREWALL_OUTBOUND_SUBNETS=${GLUETUN_SUBNET}/16
-      - VPN_PORT_FORWARDING=on
-      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --save-cookies=cookies.txt --post-data "username=${QBITTORRENT_USERNAME}&password=${QBITTORRENT_PASSWORD}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/auth/login; wget -O- --retry-connrefused --load-cookies=cookies.txt --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1' 
-      - VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --load-cookies=cookies.txt --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo"}" http://${GLUETUN_DOCKER_IP_ADDRESS}:${QBITTORRENT_PORT}/api/v2/app/setPreferences 2>&1'
+      - WIREGUARD_ENDPOINT_IP=${VPN_ENDPOINT_IP}
+      - WIREGUARD_ADDRESSES=${VPN_ADDRESS}
+    # Control server
+      - HTTP_CONTROL_SERVER_ADDRESS=0.0.0.0:${GLUETUN_PORT}
+      - HTTP_CONTROL_SERVER_LOG=ON
+      - HTTP_CONTROL_SERVER_AUTH_CONFIG_FILEPATH=/gluetun/auth/config.toml
     ports:
       - ${GLUETUN_PORT}:8000 # control server
       - ${QBITTORRENT_PORT}:8081 # qbittorrent webui
