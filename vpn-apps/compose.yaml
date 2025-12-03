@@ -36,7 +36,7 @@ services:
       - ${QBITTORRENT_PORT}:8081 # qbittorrent webui
       - ${PROWLARR_PORT}:9696 # prowlarr
     restart: always
-    command: update -enduser -providers protonvpn -proton-email ${UPDATER_PROTONVPN_EMAIL} -proton-password ${UPDATER_PROTONVPN_PASSWORD}
+    #command: update -enduser -providers protonvpn -proton-email ${UPDATER_PROTONVPN_EMAIL} -proton-password ${UPDATER_PROTONVPN_PASSWORD}
     networks:
       monsklint:
         ipv4_address: ${GLUETUN_DOCKER_IP_ADDRESS}
