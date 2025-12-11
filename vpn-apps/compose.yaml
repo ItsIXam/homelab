@@ -128,6 +128,15 @@ services:
       - TZ=${TZ}
     network_mode: "service:gluetun"
     restart: unless-stopped
+  qbittorrent_trackers_updater:
+    build:
+      context: /mnt/monsklint/configurations/docker-compose/docker-qbittorrent-trackers-injector/qbittorrent-trackers-updater
+      dockerfile: Dockerfile
+    container_name: qbittorrent_trackers_updater
+    env_file:
+      - .env
+    network_mode: "service:gluetun"
+    restart: unless-stopped
 networks:
   monsklint:
     external: true
