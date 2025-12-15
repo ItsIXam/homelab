@@ -128,6 +128,23 @@ services:
       - TZ=${TZ}
     network_mode: "service:gluetun"
     restart: unless-stopped
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    volumes:
+      - ${SABNZBD_DIRECTORY}/config:/config
+      - ${SABNZBD_INCOMPLETE}:/incomplete-downloads
+      - ${SABNZBD_COMPLETE}:/downloads
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+      - TZ=${TZ}
+    network_mode: "service:gluetun"
+    ports:
+      - ${SABNZBD_PORT}:8080
+    depends_on:
+      - gluetun
+    restart: unless-stopped
 networks:
   monsklint:
     external: true
