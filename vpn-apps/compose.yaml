@@ -141,8 +141,8 @@ services:
     container_name: sabnzbd
     volumes:
       - ${SABNZBD_DIRECTORY}/config:/config
-      - ${SABNZBD_INCOMPLETE}:/incomplete-downloads
-      - ${SABNZBD_COMPLETE}:/downloads
+      - ${SABNZBD_INCOMPLETE}:/data/usenet/incomplete
+      - ${SABNZBD_COMPLETE}:/data/usenet/complete
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
