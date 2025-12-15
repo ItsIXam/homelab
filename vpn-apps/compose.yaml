@@ -30,7 +30,7 @@ services:
       - FIREWALL_INPUT_PORTS=${GLUETUN_PORT},${QBITTORRENT_PORT},${PROWLARR_PORT}
       - FIREWALL_OUTBOUND_SUBNETS=192.168.69.0/24,10.0.0.0/16,172.20.0.0/16
     # Dns
-      - DOT_PROVIDERS=cloudflare,google
+      - DNS_ADDRESS=${DNS_IP_ADDRESS}
       - PUBLICIP_API=ip2location
     # Wireguard Settings
       - VPN_TYPE=${VPN_TYPE}
