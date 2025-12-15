@@ -45,6 +45,7 @@ services:
       - ${GLUETUN_PORT}:8000 # control server
       - ${QBITTORRENT_PORT}:8081 # qbittorrent webui
       - ${PROWLARR_PORT}:9696 # prowlarr
+      - ${SABNZBD_PORT}:8080 
     restart: always
     #command: update -enduser -providers protonvpn -proton-email ${UPDATER_PROTONVPN_EMAIL} -proton-password ${UPDATER_PROTONVPN_PASSWORD}
     networks:
@@ -74,6 +75,13 @@ services:
       - traefik.http.routers.mousehole-https.rule=Host(`mousehole.monsklint.nl`)
       - traefik.http.routers.mousehole-https.service=mousehole
       - traefik.http.services.mousehole.loadbalancer.server.port=${MOUSEHOLE_PORT}
+
+      - traefik.http.routers.sabnzbd-https.tls=true
+      - traefik.http.routers.sabnzbd-https.tls.certresolver=cloudflare
+      - traefik.http.routers.sabnzbd-https.entrypoints=websecure-int #internal entrypoint
+      - traefik.http.routers.sabnzbd-https.rule=Host(`sabnzbd.monsklint.nl`)
+      - traefik.http.routers.sabnzbd-https.service=sabnzbd
+      - traefik.http.services.sabnzbd.loadbalancer.server.port=${SABNZBD_PORT}
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:${QBITTORRENT_RELEASE_TAG}
     container_name: qbittorrent
@@ -140,8 +148,6 @@ services:
       - PGID=${GROUP_ID}
       - TZ=${TZ}
     network_mode: "service:gluetun"
-    ports:
-      - ${SABNZBD_PORT}:8080
     depends_on:
       - gluetun
     restart: unless-stopped
